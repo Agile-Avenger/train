@@ -3,4 +3,5 @@ archive(2)
 pneumonia_model.h5
 tb_detection_model_final.h5
 best_tb_model.keras
-outputs
+outputs 
+final_resnet50_model.h5
