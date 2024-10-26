@@ -3,10 +3,10 @@ import pandas as pd
 from sklearn.utils.class_weight import compute_class_weight
 
 # Load your data into a DataFrame
-data = pd.read_csv("labels/train.csv")
+data = pd.read_csv("labels/labels.csv")
 
 # Exclude non-label columns (id, subj_id)
-label_columns = data.columns[1:-1]
+label_columns = data.columns[1:]
 
 # Calculate the number of samples
 n_samples = len(data)

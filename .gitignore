@@ -5,3 +5,5 @@ tb_detection_model_final.h5
 best_tb_model.keras
 outputs 
 final_resnet50_model.h5
+logs
+best_model.keras
