@@ -150,8 +150,8 @@ def load_existing_model(model_path):
         return None
 
 if __name__ == "__main__":
-    train_directory = "D:/IMP/Agile_Avengers/train/archive(1)/chest_xray/train"
-    test_image_path = "archive(2)/data/Tuberculosis/Tuberculosis-28.png"
+    train_directory = "D:/IMP/Agile_Avengers/train2/archive(1)/chest_xray/train"
+    test_image_path = "D:/IMP/Agile_Avengers/train2/archive(1)/chest_xray/train/NORMAL/IM-0156-0001.jpeg"
     train_csv_path = "chest_xray_dataset_train.csv"
     
     choice = input("Do you want to train a new model or use an existing one? (train/load): ").strip().lower()

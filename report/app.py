@@ -88,7 +88,7 @@ class XRayReportGenerator:
                     ]
                 }
             },
-            "Uncertain": {
+            "Not processed Proporly ": {
                 "findings": "The radiographic findings are indeterminate. Technical factors or patient positioning may limit interpretation.",
                 "impression": "Findings are inconclusive and require clinical correlation and possibly additional imaging.",
                 "recommendations": [
@@ -242,7 +242,7 @@ class XRayReportGenerator:
         # Preprocess image with validation
         processed_img, is_valid = self.preprocess_image(image_path)
         if not is_valid:
-            return "Uncertain", 0.0, {"error": "Invalid or poor quality image"}
+            return "Not processed Proporly ", 0.0, {"error": "Invalid or poor quality image"}
         
         # Get model prediction with multiple samples
         predictions = []
@@ -254,18 +254,19 @@ class XRayReportGenerator:
         std_pred = np.std(predictions)
         
         if std_pred > 0.15:
-            return "Uncertain", float(mean_pred), {"uncertainty": "High prediction variance"}
+            return "Not processed Proporly ", float(mean_pred), {"uncertainty": "High prediction variance"}
         
+        # Fixed logic: mean_pred represents probability of pneumonia
         if mean_pred > self.confidence_threshold:
-            classification = "Pneumonia"
-            confidence = mean_pred
+            classification = "Normal"  # Changed from "Pneumonia"
+            confidence = 1 - mean_pred  # Adjusted confidence calculation
         elif mean_pred < (1 - self.confidence_threshold):
-            classification = "Normal"
-            confidence = 1 - mean_pred
+            classification = "Pneumonia"  # Changed from "Normal"
+            confidence = mean_pred  # Adjusted confidence calculation
         else:
-            return "Uncertain", float(mean_pred), {"uncertainty": "Low confidence"}
+            return "Not processed Proporly ", float(mean_pred), {"uncertainty": "Low confidence"}
         
-        # Additional analysis for positive cases
+        # Additional analysis for pneumonia cases
         if classification == "Pneumonia":
             affected_areas = self._analyze_affected_areas(cv2.imread(image_path, 0))
             pleural_analysis = self._analyze_pleural_space(cv2.imread(image_path, 0))
@@ -328,7 +329,7 @@ class XRayReportGenerator:
         report.append("Study: Chest X-ray (PA View)")
         report.append(f"Analysis: {classification}")
         
-        if classification != "Uncertain":
+        if classification != "Not processed Proporly ":
             report.append(f"AI Analysis Confidence: {confidence*100:.1f}%")
             if "confidence_metrics" in analysis:
                 report.append(f"Prediction Stability: ±{analysis['confidence_metrics']['std_prediction']*100:.1f}%")
@@ -337,14 +338,14 @@ class XRayReportGenerator:
         report.append("\nFINDINGS")
         report.append("-" * 20)
         
-        if classification == "Uncertain":
-            report.append(self.report_patterns["Uncertain"]["findings"])
+        if classification == "Not processed Proporly ":
+            report.append(self.report_patterns["Not processed Proporly "]["findings"])
             report.append("\nIMPRESSION")
             report.append("-" * 20)
-            report.append(self.report_patterns["Uncertain"]["impression"])
+            report.append(self.report_patterns["Not processed Proporly "]["impression"])
             report.append("\nRECOMMENDATIONS")
             report.append("-" * 20)
-            for i, rec in enumerate(self.report_patterns["Uncertain"]["recommendations"], 1):
+            for i, rec in enumerate(self.report_patterns["Not processed Proporly "]["recommendations"], 1):
                 report.append(f"{i}. {rec}")
         elif classification == "Normal":
             for finding in self.report_patterns["Normal"]["findings"].values():
@@ -382,7 +383,7 @@ class XRayReportGenerator:
 # Example usage
 if __name__ == "__main__":
     # Initialize generator with model path
-    generator = XRayReportGenerator("D:/IMP/Agile_Avengers/train/pneumonia/pneumonia_model.h5",confidence_threshold=0.75)
+    generator = XRayReportGenerator("D:/IMP/Agile_Avengers/train2/pneumonia/pneumonia_model.h5",confidence_threshold=0.75)
 
     patient_info = PatientInfo(
         medical_history="No prior respiratory issues",
@@ -391,5 +392,5 @@ if __name__ == "__main__":
 
     
     # Generate report
-    report = generator.generate_report("D:/IMP/Agile_Avengers/train/archive(1)/chest_xray/train/NORMAL/IM-0156-0001.jpeg")
+    report = generator.generate_report("D:/IMP/Agile_Avengers/train2/archive(1)/chest_xray/train/PNEUMONIA/person3_bacteria_12.jpeg")
     print(report)
